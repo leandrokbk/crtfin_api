@@ -1,10 +1,7 @@
 package ctr.fin.api.domain.transacoes;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,6 +9,7 @@ import java.time.LocalDate;
 @Table(name = "transacoes")
 @Entity(name = "Transacao")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
