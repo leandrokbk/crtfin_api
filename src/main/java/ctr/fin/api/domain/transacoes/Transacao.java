@@ -20,7 +20,7 @@ public class Transacao  {
     private  Long id;
     private LocalDate data;
     private BigDecimal valor;
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private TipoTransacao tipo;
     public Transacao(DadosCadastroTransacao dados) {
 
@@ -29,4 +29,15 @@ public class Transacao  {
         this.tipo = dados.tipo();
     }
 
+    public void atualizarInformacoes(DadosAtualizacaoTransacao dados) {
+
+
+        if (dados.valor() != null) {
+            this.valor = dados.valor();
+
+        }
+        if (dados.tipo() != null) {
+            this.tipo = dados.tipo();
+        }
+    }
 }

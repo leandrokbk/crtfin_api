@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -17,7 +18,7 @@ public class TransacoesController {
     public TransacaoRepesitory repository;
 
     @PostMapping
-
+    @Transactional
     public void  cadastroTransacao (@RequestBody DadosCadastroTransacao dados){
         repository.save(new Transacao(dados) );
     }
@@ -27,8 +28,17 @@ public class TransacoesController {
         return repository.findAll(paginacao).map(DadosListagemTrasacao::new);
     }
 
+
     @PutMapping
+    @Transactional
     public void atualizar(@RequestBody DadosAtualizacaoTransacao dados){
         var transacao = repository.getReferenceById(dados.id());
+        transacao.atualizarInformacoes(dados);
     }
+    @DeleteMapping("/{id}")
+    @Transactional
+    public void excluirTransacao(@PathVariable Long id){
+        repository.deleteById(id);
+    }
+
 }
