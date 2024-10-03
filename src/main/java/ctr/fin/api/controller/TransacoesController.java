@@ -1,6 +1,7 @@
 package ctr.fin.api.controller;
 
 import ctr.fin.api.domain.transacoes.*;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +20,7 @@ public class TransacoesController {
 
     @PostMapping
     @Transactional
-    public void  cadastroTransacao (@RequestBody DadosCadastroTransacao dados){
+    public void  cadastroTransacao (@RequestBody @Valid DadosCadastroTransacao dados){
         repository.save(new Transacao(dados) );
     }
 
