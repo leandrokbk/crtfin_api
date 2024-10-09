@@ -1,10 +1,7 @@
 package ctr.fin.api.domain.usuario;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +12,7 @@ import java.util.List;
 @Table(name = "usuarios")
 @Entity(name = "Usuarios")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
@@ -24,11 +22,13 @@ public class Usuario implements UserDetails {
     private  Long id;
     private String login;
     private String senha;
+    private Boolean  ativo;
 
 
     public Usuario(DadosCadastroUsuario dados) {
         this.login = dados.login();
         this.senha = dados.senha();
+        this.ativo = true;
 
     }
 
@@ -66,4 +66,10 @@ public class Usuario implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public void inativar() {
+        this.ativo = false;
+    }
+
+
 }
