@@ -20,13 +20,13 @@ public class TransacoesController {
     @Autowired
     public TransacaoRepesitory repository;
 
+    @Autowired
+    private TransacaoService transacaoService;
+
     @PostMapping
     @Transactional
-    public ResponseEntity cadastroTransacao (@RequestBody @Valid DadosCadastroTransacao dados, UriComponentsBuilder uriBuilder){
-
-        var transacao = new Transacao(dados);
-        repository.save(transacao);
-
+    public ResponseEntity <DadosDetalhamentoTransacao>cadastroTransacao (@RequestBody @Valid DadosCadastroTransacao dados, UriComponentsBuilder uriBuilder){
+        var transacao = transacaoService.cadastrarTransacao(dados);
         var uri = uriBuilder.path("/transacao/{id}").buildAndExpand(transacao.getId()).toUri();
 
         return ResponseEntity.created(uri).body(new DadosDetalhamentoTransacao(transacao));
@@ -34,24 +34,23 @@ public class TransacoesController {
 
     @GetMapping
     public ResponseEntity<Page<DadosListagemTrasacao> >listar(Pageable paginacao){
-        var page = repository.findAll(paginacao).map(DadosListagemTrasacao::new);
+        var page = transacaoService.listarTransacoes(paginacao);
+
         return ResponseEntity.ok(page);
     }
 
 
     @PutMapping
     @Transactional
-    public ResponseEntity atualizar(@RequestBody DadosAtualizacaoTransacao dados){
-        var transacao = repository.getReferenceById(dados.id());
-        transacao.atualizarInformacoes(dados);
+    public ResponseEntity<DadosDetalhamentoTransacao> atualizar(@RequestBody DadosAtualizacaoTransacao dados){
+        var transacao = transacaoService.atualizarTransacao(dados);
 
         return ResponseEntity.ok(new DadosDetalhamentoTransacao(transacao));
     }
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity excluirTransacao(@PathVariable Long id){
-
-        repository.deleteById(id);
+        transacaoService.excluirTransacao(id);
 
         return ResponseEntity.noContent().build();
     }
