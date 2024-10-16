@@ -15,6 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
 
 
 @Service
@@ -26,12 +29,22 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository repository;
 
-    public void cadastrarUsuario(DadosCadastroUsuario dados){
 
+
+    public String cadastrarUsuario(DadosCadastroUsuario dados){
+
+       // private Boolean verificarUsuario;
         Usuario usuario = new Usuario(dados);
+
+        var verificarUsuario = repository.findByLogin(usuario.getLogin());
+        if (verificarUsuario != null) {
+            return "Usuario " + usuario.getLogin() + " já cadastrado";
+        }
+
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
 
         repository.save(usuario);
+        return "Usuario cadastrado com sucesso";
     }
 
     @Transactional
@@ -47,8 +60,12 @@ public class UsuarioService {
 
     @Transactional
     public String processarArquivo(MultipartFile file) throws IOException {
-        if (file.isEmpty()) {
-            return "O arquivo está vazio.";
+
+
+        var validaExcel = ValidaPlanilha.isExcelFileValid(file);
+
+        if (!validaExcel) {
+            return "O arquivo Excel está vazio!.";
         }
 
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
@@ -63,17 +80,22 @@ public class UsuarioService {
                 usuario.setLogin(row.getCell(0).getStringCellValue());
                 usuario.setSenha(passwordEncoder.encode(row.getCell(1).getStringCellValue()));
 
+                
+
+
+
                 if ("ATIVO".equalsIgnoreCase(row.getCell(2).getStringCellValue())) {
                     usuario.setAtivo(true);
                 } else {
                     usuario.setAtivo(false);
                 }
 
+                //String resultado = cadastrarUsuario(usuario);
                 repository.save(usuario);
             }
         }
 
-        return "Arquivo processado e dados salvos com sucesso!";
+        return "Usuários cadastrados com sucesso!";
     }
 
 

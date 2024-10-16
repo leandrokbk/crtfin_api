@@ -32,9 +32,17 @@ public class UsuariosController {
     private UsuarioService usuarioService;
 
     @PostMapping
-    public void cadastrarusuario(@RequestBody DadosCadastroUsuario dados){
+    public ResponseEntity cadastrarusuario(@RequestBody DadosCadastroUsuario dados){
 
-        usuarioService.cadastrarUsuario(dados);
+        String retornoCadastro = usuarioService.cadastrarUsuario(dados);
+
+        if ("Usuario cadastrado com sucesso" != retornoCadastro) {
+            // Retorna com status 409 (Conflito) e a mensagem
+            return ResponseEntity.status(409).body(retornoCadastro);
+        }
+
+        return ResponseEntity.noContent().build();
+
     }
 
 
