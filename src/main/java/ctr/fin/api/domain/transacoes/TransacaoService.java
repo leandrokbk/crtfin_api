@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import jakarta.annotation.PostConstruct;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 
 @Service
@@ -41,6 +43,17 @@ public class TransacaoService {
     @Transactional
     public Transacao cadastrarTransacao(@Valid DadosCadastroTransacao dados) {
         var transacao = new Transacao(dados);
+        if (!"BRL".equals(transacao.getMoeda())){
+            BigDecimal cotacao = getExchangeRates(transacao.getMoeda()).getBody();
+          // transacao.setValor_convertido(transacao.getValor().multiply(cotacao));
+            transacao.setValor_convertido(transacao.getValor().multiply(cotacao)
+                    .setScale(2, RoundingMode.HALF_UP));
+
+            repository.save(transacao);
+            return transacao;
+        }
+
+
         repository.save(transacao);
         return transacao;
     }
@@ -69,7 +82,7 @@ public class TransacaoService {
         System.out.println("API Key: " + moedaBase);
     }
     // Método que faz a chamada à API de câmbio
-    public ResponseEntity<String> getExchangeRates(String baseCurrency) {
+    public ResponseEntity<BigDecimal> getExchangeRates(String baseCurrency) {
         // Inicializando o WebClient dentro do método
         RestClient webClient = RestClient.builder()
                 .baseUrl(apiUrl)
@@ -80,7 +93,7 @@ public class TransacaoService {
                 .uri(uriBuilder -> uriBuilder
                         .path("/latest")
                         .queryParam("access_key", apiKey)
-                        .queryParam("base", moedaBase)
+                        .queryParam("base", baseCurrency)
                         .build())
                 .retrieve()
                 .toEntity(Map.class);  // Pegando a resposta como um Map (JSON)
@@ -88,17 +101,18 @@ public class TransacaoService {
         // Extrair o valor da chave "BRL"
         if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
             Map<String, Object> responseBody = responseEntity.getBody();
-            Map<String, Double> rates = (Map<String, Double>) responseBody.get("rates");
-            Double rate = rates.get(baseCurrency);
+            Map<String, Object> rates = (Map<String, Object>) responseBody.get("rates");
+            BigDecimal rate = new BigDecimal(rates.get(moedaBase).toString());
+            // BigDecimal rate = rates.get(moedaBase);
            // Double euroRate = rates.get(moedaBase);
 
             if (rate != null) {
-                return ResponseEntity.ok(rate.toString());
+                return ResponseEntity.ok(rate);
             } else {
-                return ResponseEntity.badRequest().body("Taxa não encontrada");
+                return ResponseEntity.badRequest().body(rate);
             }
         } else {
-            return ResponseEntity.status(responseEntity.getStatusCode()).body("Erro na requisição");
+            return (ResponseEntity<BigDecimal>) ResponseEntity.status(responseEntity.getStatusCode());
         }
     }
 }

@@ -14,7 +14,9 @@ public record DadosCadastroTransacao(
         @NotNull
         BigDecimal valor,
         @NotNull
-        TipoTransacao tipo) {
+        TipoTransacao tipo,
+        @NotNull
+        String moeda) {
 
 
 }

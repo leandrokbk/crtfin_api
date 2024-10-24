@@ -22,11 +22,15 @@ public class Transacao  {
     private BigDecimal valor;
     @Enumerated(EnumType.STRING)
     private TipoTransacao tipo;
+    private String moeda;
+    private BigDecimal valor_convertido;
     public Transacao(DadosCadastroTransacao dados) {
 
         this.data = dados.data();
         this.valor = dados.valor();
         this.tipo = dados.tipo();
+        this.moeda = dados.moeda();
+        this.valor_convertido = dados.valor();
     }
 
     public void atualizarInformacoes(DadosAtualizacaoTransacao dados) {

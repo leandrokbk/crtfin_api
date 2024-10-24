@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @RestController
@@ -56,7 +57,7 @@ public class TransacoesController {
     }
 
     @GetMapping("/cotacao")
-    public ResponseEntity<String> getExchangeRates(@RequestBody BaseCurrency baseCurrency) {
+    public ResponseEntity<BigDecimal> getExchangeRates(@RequestBody BaseCurrency baseCurrency) {
 
 
         String moeda = baseCurrency.getBaseCurrency();

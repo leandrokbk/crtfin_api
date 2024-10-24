@@ -9,9 +9,11 @@ public record DadosListagemTrasacao(
 
         BigDecimal valor,
 
-        TipoTransacao tipo) {
+        TipoTransacao tipo,
+        String moeda,
+        BigDecimal valor_convertido) {
 
     public DadosListagemTrasacao(Transacao transacao){
-        this(transacao.getId(), transacao.getData(), transacao.getValor(), transacao.getTipo());
+        this(transacao.getId(), transacao.getData(), transacao.getValor(), transacao.getTipo(), transacao.getMoeda(), transacao.getValor_convertido());
     }
 }
