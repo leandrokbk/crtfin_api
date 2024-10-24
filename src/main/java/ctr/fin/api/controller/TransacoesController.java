@@ -9,16 +9,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("transacao")
 public class TransacoesController {
 
     @Autowired
-    public TransacaoRepesitory repository;
+    public TransacaoRepository repository;
 
     @Autowired
     private TransacaoService transacaoService;
@@ -54,5 +54,18 @@ public class TransacoesController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/cotacao")
+    public ResponseEntity<String> getExchangeRates(@RequestBody BaseCurrency baseCurrency) {
+
+
+        String moeda = baseCurrency.getBaseCurrency();
+
+        return  transacaoService.getExchangeRates(moeda);
+
+
+
+    }
+
 
 }
