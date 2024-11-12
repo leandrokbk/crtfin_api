@@ -1,8 +1,11 @@
 package ctr.fin.api.controller;
 
+import ctr.fin.api.domain.transacoes.DadosAtualizacaoTransacao;
+import ctr.fin.api.domain.transacoes.DadosDetalhamentoTransacao;
 import ctr.fin.api.domain.transacoes.DadosListagemTrasacao;
 import ctr.fin.api.domain.usuario.*;
 import ctr.fin.api.infra.security.SecurityConfigurations;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -21,6 +24,7 @@ import java.io.InputStream;
 
 @RestController
 @RequestMapping("usuarios")
+@SecurityRequirement(name = "bearer-key")
 public class UsuariosController {
 
     @Autowired
@@ -51,6 +55,14 @@ public class UsuariosController {
     public ResponseEntity inativarUsuario(@PathVariable Long id){
         usuarioService.inativaUsuario(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping
+    @Transactional
+    public ResponseEntity<DadosDetalhamentoUsuario> atualizarUsuario(@RequestBody DadosAtualizacaoUsuario dados){
+        var usuario = usuarioService.atualizarDadosUsuario(dados);
+
+        return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario));
     }
 
     @GetMapping

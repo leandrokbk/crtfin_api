@@ -44,9 +44,10 @@ public class TransacaoService {
     public Transacao cadastrarTransacao(@Valid DadosCadastroTransacao dados) {
         var transacao = new Transacao(dados);
         if (!"BRL".equals(transacao.getMoeda())){
-            BigDecimal cotacao = getExchangeRates(transacao.getMoeda()).getBody();
+            //BigDecimal cotacao = getExchangeRates(transacao.getMoeda()).getBody();
+             RatesResult ratesResult = getExchangeRates2(transacao.getMoeda());
           // transacao.setValor_convertido(transacao.getValor().multiply(cotacao));
-            transacao.setValor_convertido(transacao.getValor().multiply(cotacao)
+            transacao.setValor_convertido(transacao.getValor().multiply(ratesResult.rate()).multiply(ratesResult.rateBRL())
                     .setScale(2, RoundingMode.HALF_UP));
 
             repository.save(transacao);
@@ -115,4 +116,39 @@ public class TransacaoService {
             return (ResponseEntity<BigDecimal>) ResponseEntity.status(responseEntity.getStatusCode());
         }
     }
+
+    // Método que faz a chamada à API de câmbio
+    public RatesResult getExchangeRates2(String baseCurrency) {
+        // Inicializando o WebClient dentro do método
+        RestClient webClient = RestClient.builder()
+                .baseUrl(apiUrl)
+                .build();
+
+        // Fazendo a requisição à API
+        ResponseEntity<Map> responseEntity = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/latest")
+                        .queryParam("access_key", apiKey)
+                        .queryParam("base", moedaBase)
+                        .build())
+                .retrieve()
+                .toEntity(Map.class);  // Pegando a resposta como um Map (JSON)
+
+        // Verificando se a resposta é bem-sucedida e contém um corpo
+        if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
+            Map<String, Object> responseBody = responseEntity.getBody();
+            Map<String, Object> rates = (Map<String, Object>) responseBody.get("rates");
+
+            // Extrair as taxas para as moedas especificadas
+            BigDecimal rate = new BigDecimal(rates.get(baseCurrency).toString());
+            BigDecimal rateBRL = new BigDecimal(rates.get("BRL").toString());
+
+            // Retornar um novo RatesResult com os valores
+            return new RatesResult(rate, rateBRL);
+        }
+
+        // Caso a resposta não seja bem-sucedida, retornar um RatesResult vazio ou com valores padrão
+        return new RatesResult(BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
 }

@@ -1,6 +1,7 @@
 package ctr.fin.api.controller;
 
 import ctr.fin.api.domain.transacoes.*;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("transacao")
+@SecurityRequirement(name = "bearer-key")
 public class TransacoesController {
 
     @Autowired
@@ -63,6 +65,24 @@ public class TransacoesController {
         String moeda = baseCurrency.getBaseCurrency();
 
         return  transacaoService.getExchangeRates(moeda);
+
+
+
+
+
+    }
+    @GetMapping("/cotacoes")
+    public ResponseEntity<RatesResult> buscaCotacoes(@RequestBody BaseCurrency baseCurrency) {
+
+
+        String moeda = baseCurrency.getBaseCurrency();
+
+
+        RatesResult ratesresult = transacaoService.getExchangeRates2(moeda);
+
+        return  ResponseEntity.ok(ratesresult);
+
+
 
 
 

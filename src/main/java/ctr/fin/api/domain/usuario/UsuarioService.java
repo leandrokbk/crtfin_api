@@ -1,6 +1,7 @@
 package ctr.fin.api.domain.usuario;
 
 
+import jakarta.validation.constraints.NotNull;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -8,6 +9,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,9 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Objects;
 
 
 @Service
@@ -52,6 +51,29 @@ public class UsuarioService {
         var usuario = repository.getReferenceById(id);
         usuario.inativar();
 
+    }
+
+    @Transactional
+    public Usuario atualizarDadosUsuario(@NotNull DadosAtualizacaoUsuario dados) {
+        //var usuario = repository.findByLogin(dados.login());
+      /*  if (user.getPassword().equals(passwordEncoder.encode(dados.senhaAtual()))) {
+            user.atualizarInformacoesUsuario(dados);
+            return user;
+        }*/
+
+        var usuario = repository.getReferenceById(dados.id());
+
+        if (passwordEncoder.matches(dados.senhaAtual(), usuario.getPassword())) {
+
+            //usuario.setSenha(passwordEncoder.encode(dados.novaSenha()));
+            //DadosAtualizacaoUsuario dadosAtualizados = new DadosAtualizacaoUsuario(dados.id(), dados.login(),( passwordEncoder.encode(dados.novaSenha())), ( passwordEncoder.encode(dados.novaSenha())), dados.ativo());
+            usuario.atualizarInformacoesUsuario(passwordEncoder.encode(dados.novaSenha()), dados.ativo());
+
+
+
+            return usuario;
+        }
+        return usuario;
     }
 
     public Page<Usuario> listaUsuarios(Pageable paginacao) {
@@ -97,7 +119,6 @@ public class UsuarioService {
 
         return "Usuários cadastrados com sucesso!";
     }
-
 
 
 

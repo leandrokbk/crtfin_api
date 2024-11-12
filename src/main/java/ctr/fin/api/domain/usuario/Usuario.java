@@ -1,10 +1,13 @@
 package ctr.fin.api.domain.usuario;
 
+import ctr.fin.api.domain.transacoes.DadosAtualizacaoTransacao;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,6 +20,8 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Usuario implements UserDetails {
+
+
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long id;
@@ -71,5 +76,18 @@ public class Usuario implements UserDetails {
         this.ativo = false;
     }
 
+    public void atualizarInformacoesUsuario(String dados, String ativo) {
+
+
+        if (dados != null) {
+            this.senha = (dados);
+
+        }
+        if ("ATIVO".equalsIgnoreCase(ativo)) {
+            this.ativo = true;
+        } else {
+            this.ativo = false;
+        }
+    }
 
 }
