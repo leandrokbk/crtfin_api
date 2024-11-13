@@ -4,6 +4,7 @@ import ctr.fin.api.domain.transacoes.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
@@ -82,10 +84,13 @@ public class TransacoesController {
 
         return  ResponseEntity.ok(ratesresult);
 
+    }
+
+    @PostMapping("/relatorio")
+    public ResponseEntity<InputStreamResource> gerarRelatorioData(@RequestBody RelatorioData relatorioData) {
 
 
-
-
+        return transacaoService.gerarRelatoriodDataTransacao(relatorioData.dataInicio(), relatorioData.dataFim());
     }
 
 

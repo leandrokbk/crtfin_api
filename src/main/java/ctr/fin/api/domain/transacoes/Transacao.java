@@ -18,6 +18,7 @@ public class Transacao  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long id;
+    @Column(name = "data")
     private LocalDate data;
     private BigDecimal valor;
     @Enumerated(EnumType.STRING)

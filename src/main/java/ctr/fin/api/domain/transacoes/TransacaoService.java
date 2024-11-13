@@ -1,9 +1,17 @@
 package ctr.fin.api.domain.transacoes;
 
 import jakarta.validation.Valid;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,8 +21,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import jakarta.annotation.PostConstruct;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -149,6 +163,58 @@ public class TransacaoService {
 
         // Caso a resposta não seja bem-sucedida, retornar um RatesResult vazio ou com valores padrão
         return new RatesResult(BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
+    public ResponseEntity<InputStreamResource> gerarRelatoriodDataTransacao(LocalDate startDate, LocalDate endDate) {
+        // Buscar transações no repositório
+        List<Transacao> transacoes = repository.findByDataTransacaoBetween(startDate, endDate);
+
+        // Criar um Workbook para o Excel
+        try (Workbook workbook = new XSSFWorkbook()) {
+
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
+
+            Sheet sheet = workbook.createSheet("Relatorio transações por data" );
+
+            // Criar cabeçalho do relatório
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("ID");
+            headerRow.createCell(1).setCellValue("Data");
+            headerRow.createCell(2).setCellValue("Valor");
+            headerRow.createCell(3).setCellValue("Tipo");
+            headerRow.createCell(4).setCellValue("Moeda");
+            headerRow.createCell(5).setCellValue("Valor Convertido");
+
+            // Preencher os dados
+            int rowNum = 1;
+            for (Transacao transacao : transacoes) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(transacao.getId());
+                row.createCell(1).setCellValue(transacao.getData().toString());
+                row.createCell(2).setCellValue(transacao.getValor().toString());
+                row.createCell(3).setCellValue(transacao.getTipo().toString());
+                row.createCell(4).setCellValue(transacao.getMoeda());
+                row.createCell(5).setCellValue(transacao.getValor_convertido().toString());
+            }
+
+            // Escrever o Workbook em um ByteArrayOutputStream
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+
+            // Retornar o arquivo como um recurso de entrada para download
+            ByteArrayResource resource = new ByteArrayResource(out.toByteArray());
+
+            String filename = "RelatorioTransacoes_" + timestamp + ".xlsx";
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .contentLength(resource.contentLength())
+                    .body(new InputStreamResource(resource.getInputStream()));
+        } catch (IOException e) {
+            // Em caso de erro, retornar uma resposta de erro
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 }
